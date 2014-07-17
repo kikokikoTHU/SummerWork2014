@@ -1,0 +1,14 @@
+1.Describe the problem
+
+	This problem is about finding error data and missing data in a given sample with a given template.
+
+	The given template is an integer stream with length N, and each of its elements is in [0,4095]. The given sample is should be a similar stream with length M. The whole process could be described as: Imagine that a transmitter sends the template recurrently and only sends an element for each time. Notice that we may start sending data from each possible position of template stream, which leads to the problem more complicated.
+	Then there is also a receiver receiving these sent data continually. And this is not a stable process which means we have chance to get some wrong data or miss some of them. And the p denotes missing rate and q denotes error rate.
+
+2.Difficulties of finding solution
+	
+	In fact, this problem is an intractable problem, we will never find a perfect solution. An simple example to demonstrate this case is that if we miss some data in the front of the whole stream or in the end of the whole stream continually, we can do nothing to exam this kind of missing. Cause we may start receiving from any position and finish receiving in any position. In addition, the error data is also in [0,4095], which leads to a frustrating result of failing to detect error data.
+
+3.Some auxiliary restriction
+
+	According to what we discuss above, we can conclude that it is impossible for us to solve such a problem without any other condition. So what i want to do is adding a necessary limiting condition. We should match the sample to the template with least error rate and missing rate. 
