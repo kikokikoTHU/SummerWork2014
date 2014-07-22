@@ -70,8 +70,8 @@ double* initialize() {
 	} else {
 		para_list[0] = 0.01;
 		para_list[1] = 0.01;
-		para_list[2] = 100;
-		para_list[3] = 5000;
+		para_list[2] = 5000;
+		para_list[3] = 100;
 		cout << "File open error" << endl;
 	}
 
@@ -81,5 +81,4 @@ double* initialize() {
 }
 
 void inference(int* mfs, int* sample) {
-
 }
