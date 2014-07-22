@@ -1,5 +1,62 @@
 #include "data_inference.h"
 
+int edit_dist(int* mfs, int* sample, int mfs_len, int sample_len, int** detail_list)
+{
+	
+	int max1 = sample_len;
+	int max2 = mfs_len;
+
+	int **ptr = new int*[max1 + 1];	
+
+	for (int i=0; i<max1+1; i++) {
+		ptr[i] = new int[max2 + 1];
+	}
+
+	for (int i=0; i<max1+1; i++) {
+        ptr[i][0] = i;
+    }
+
+	for (int i=0; i<max2+1; i++) {
+        ptr[0][i] = i;
+    }
+
+    for(int i=1; i<max1+1; i++) {
+        for(int j=1 ;j<max2+1; j++) {
+
+            int d;
+
+            int temp = ptr[i][j-1]+1;
+
+            if(str1[i-1] == str2[j-1]) {
+                d = 0; 
+            } else {
+                d = 1;
+            }
+
+			if (temp < ptr[i-1][j-1] + d) {
+				detail_list[i][j] = 2;
+			} else {
+				detail_list[i][j] = d;
+			}
+
+            ptr[i][j] = min(temp, ptr[i-1][j-1] + d);
+
+        }
+    }
+
+    int dis = ptr[max1][max2];
+
+    for(int i = 0; i < max1 + 1; i++) {
+        delete[] ptr[i];
+        ptr[i] = NULL;
+    }
+
+    delete[] ptr;
+    ptr = NULL;
+
+    return dis;
+}
+
 double* initialize() {
 	double* para_list = new double[4]; 
 
@@ -21,40 +78,6 @@ double* initialize() {
 	para_config_file.close();
 
 	return para_list;
-}
-
-int best_match(int* mfs, int* sub_data, int start_pos, int N, int sub_len, int miss_len) {
-	int error_count = 0;
-
-	int* sub_mfs = new int[sub_len+miss_len];
-
-	int pos = start_pos;
-
-	for (int i=0; i<sub_len+miss_len; i++) {
-		sub_mfs[i] = mfs[pos];
-		pos++;
-		if (pos == N)
-			pos = 0;
-	}
-
-	for (int i=0; i<sub_len; i++) {
-		if (sub_mfs[i] != sub_data[i])
-			error_count++;
-	}
-
-	
-}
-
-int find_start(int *mfs, int* sample, int sub_len, int miss_len, int N) {
-	int* sub_data = new int[sub_len];
-
-	for (int i=0; i<sub_len; i++) {
-		sub_data[i] = sample[i];
-	}
-
-	for (int i=0; i<N; i++) {
-
-	}
 }
 
 void inference(int* mfs, int* sample) {

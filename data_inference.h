@@ -1,9 +1,7 @@
 #include "data_generator.h"
 
+int edit_dist(int* mfs, int* sample, int mfs_len, int sample_len, int** detail_list);
+
 double* initialize();
-
-int best_match(int* mfs, int* sub_data, int start_pos, int N, int sub_len, int miss_len);
-
-int find_start(int *mfs, int* sample, int sub_len, int miss_len, int N);
 
 void inference(int* mfs, int* sample);
