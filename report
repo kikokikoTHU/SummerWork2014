@@ -12,13 +12,13 @@
 
 4.Designing cost function
 
-	Recall that we want to match the sample and template with error rate and miss rate as little as possible. First of all, there is no doubt that we would neglect all missing data in the first part and the end part of sample stream.  Based on these assumpion, a simple idea is to design the cost function as num(error)+num(missing). We can solve this problem with some brutal algorithm, which is easy to realize but time-consuming. If we want to accelerate this process, we can use some pruning strategy.
+	Recall that we want to match the sample and template with error rate and miss rate as little as possible. First of all, there is no doubt that we would neglect all missing data in the first part and the end part of sample stream.  Based on these assumption, a simple idea is to design the cost function as num(error)+num(missing). We can solve this problem with some brutal algorithm, which is easy to realize but time-consuming. If we want to accelerate this process, we can use some pruning strategy.
 
- 	In our solution framework, we focus on minimizing incorrect rate. So we find the case in which there is the least Levenshtein distance(edit distance) bewteen sample and template. Also we can also design other cost function, which may be thought more reasonable. For example, we can take the distribution of incorrect data into consideration. We can assume that the missing rate and error rate is so low that it is unlikely to generate too many successive incorrect data. And we can design a particular cost function to prevent successive incorrect data from being produced in our model. If we use S={s1,s2...sn} represents incorrect data set and si means the ith successive incorrect data cluster. And the cost function = {exp(\lambda|s1|) + exp(\lambda|s2|) + ... exp(\lambda|sn|)}. \lambda is control parameter which is used as trade-off between incorrect rate and cluster rate. Generally, all function with property that f(x+y)>f(x)+f(y) can be used for eliminating successive incorrect data.
+ 	In our solution framework, we focus on minimizing incorrect rate. So we find the case in which there is the least Levenshtein distance(edit distance) between sample and template. Also we can also design other cost function, which may be thought more reasonable. For example, we can take the distribution of incorrect data into consideration. We can assume that the missing rate and error rate is so low that it is unlikely to generate too many successive incorrect data. And we can design a particular cost function to prevent successive incorrect data from being produced in our model. If we use S={s1,s2...sn} represents incorrect data set and si means the ith successive incorrect data cluster. And the cost function = {exp(\lambda|s1|) + exp(\lambda|s2|) + ... exp(\lambda|sn|)}. \lambda is control parameter which is used as trade-off between incorrect rate and cluster rate. Generally, all function with property that f(x+y)>f(x)+f(y) can be used for eliminating successive incorrect data.
 
 5.Algorithm
 
-	If we only foucs on the problem of matching sample and template, we can take dynamic programming strategy. Our problem looks extremely like edit distance problem and the only difference is the possible different measure way of distance. This problem is a classic dynamic programming problem which have had a existing method of solving with complexity of O(nm)(n, m are length of two strings). For more details about algorithm you can refer to http://en.wikipedia.org/wiki/Edit_distance.
+	If we only focus on the problem of matching sample and template, we can take dynamic programming strategy. Our problem looks extremely like edit distance problem and the only difference is the possible different measure way of distance. This problem is a classic dynamic programming problem which have had a existing method of solving with complexity of O(nm)(n, m are length of two strings). For more details about algorithm you can refer to http://en.wikipedia.org/wiki/Edit_distance.
 
 6.Drawbacks
 
@@ -28,4 +28,10 @@
 
 7. Any probability model?
 
-	When solving large data problem 
+	When solving large data problem, sometimes probability model is a state-of-art method. In this section, we will discuss whether we could construct a reasonable probability model for solving our problem. 
+
+	Surely, probability model can solve many problems with large data, and our problem seems like to be highly related to probability. However, there are some important issues need to be discussed.
+
+	First of all, if we want to solve problem with probability method, it is necessary to hold large scale of samples. In this problem, it is hardly to gather enough samples for training model.
+
+	Secondly, we should understand what we can get from constructing probability model. If we want to learn the missing rate or error rate, using probability model maybe a good choice. However, if want to detect the position of error bits or missing bits, using probability will not be helpful while these are events of equal probability.
