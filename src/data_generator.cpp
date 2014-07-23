@@ -1,7 +1,7 @@
 #include "data_generator.h"
 
 void generate_mfs_data(int N) {
-	fstream file("mfs_data", ios::app);
+	fstream file("mfs_data", ios::out);
 	if (file) {
 		file << N << endl;
 		for (int i=0; i<N; i++) {
@@ -20,10 +20,10 @@ void generate_sample_data(double p, double q, int M, int N, int* mfs_data) {
 		return;
 	}
 
-	fstream file("sample_data", ios::app);
-	fstream file2("error_data", ios::app);
+	fstream file("sample_data", ios::out);
+	fstream file2("error_data", ios::out);
 
-	if (file && flie2) {
+	if (file && file2) {
 		file << M << endl;
 
 		int n = rand()%N;
@@ -32,14 +32,14 @@ void generate_sample_data(double p, double q, int M, int N, int* mfs_data) {
 			double r = rand()/double(RAND_MAX);
 
 			if (r < p+q && r < q) {
-				file << rand()%0x1000 << endl;
-				file2 << n <<endl;
+				file << rand()%0x1000 << '\t' << mfs_data[n] << endl;
+				//file2 << n <<endl;
 			} else if (r < p+q && q <= r) {
 				// receive nothing
-				file << -1 << endl;
-				file2 << n <<endl;
+				file << -1 << '\t' << mfs_data[n] << endl;
+				//file2 << n <<endl;
 			} else if (r >= p+q) {
-				file << mfs_data[n] << endl;
+				file << mfs_data[n] << '\t' << mfs_data[n] << endl;
 			}
 
 			n++;
@@ -60,12 +60,12 @@ int* read_mfs_data() {
 	fstream file("mfs_data");
 
 	if (file) {
-		file >> N >> endl;
+		file >> N;
 
 		mfs_data = new int [N];
 
 		for (int i=0 ; i<N; i++) {
-			file >> mfs_data[i] >> endl;
+			file >> mfs_data[i];
 		}
 	} else {
 		cout << "File open error" << endl;
@@ -76,32 +76,35 @@ int* read_mfs_data() {
 
 int* read_sample_data() {
 	int* sample_data;
-	int* tmp_data;
+	int* standard_data;
+	int* visual_sample_data;
 	int M;
 
 	fstream file("sample_data");
 
 	if (file) {
-		file >> M >> endl;
+		file >> M;
 
-		tmp_data = new int [M];
+		sample_data = new int [M];
+		standard_data = new int [M];
 
 		int count = 0;
 
 		for (int i=0; i<M; i++) {
-			file >> tmp_data[i] >> endl;
-			if (tmp_data[i] != -1) {
+			file >> sample_data[i] >> standard_data[i];
+			if (sample_data[i] != -1) {
 				count++;
 			}
 		}
 
-		sample_data = new int [count];
+		visual_sample_data = new int [count];
+		visual_sample_data[0] = count;
 
-		int k = 0;
+		int k = 1;
 
 		for (int i=0; i<M; i++) {
-			if (tmp_data[i] != -1) {
-				sample_data[k] = tmp_data[i];
+			if (sample_data[i] != -1) {
+				visual_sample_data[k] = sample_data[i];
 				k++;
 			}
 		}
@@ -109,12 +112,12 @@ int* read_sample_data() {
 		cout << "File open error" << endl;
 	}
 
-	return sample_data;
+	return visual_sample_data;
 }
 
 void generate_data(double p, double q, int M, int N) {
 	srand((unsigned)time(NULL)); 
 	generate_mfs_data(N);
-	int mfs_data = read_mfs_data();
+	int* mfs_data = read_mfs_data();
 	generate_sample_data(p, q, M, N, mfs_data);
 }

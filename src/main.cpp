@@ -8,8 +8,8 @@ void main() {
 	para_list = initialize();
 	generate_data(para_list[0], para_list[1], para_list[2], para_list[3]);
 
-	mfs_data = read_mfs_data();
-	sample_data = read_sample_data();
+	//mfs_data = read_mfs_data();
+	//sample_data = read_sample_data();
 
-	inference();
+	//inference(mfs_data, sample_data);
 }

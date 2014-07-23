@@ -27,7 +27,7 @@ int edit_dist(int* mfs, int* sample, int mfs_len, int sample_len, int** detail_l
 
             int temp = ptr[i][j-1]+1;
 
-            if(str1[i-1] == str2[j-1]) {
+            if(sample[i-1] == mfs[j-1]) {
                 d = 0; 
             } else {
                 d = 1;
@@ -63,16 +63,22 @@ double* initialize() {
 	fstream para_config_file("para_config");
 
 	if (para_config_file) {
-		file >> para_list[0] >> endl;
-		file >> para_list[1] >> endl;
-		file >> para_list[2] >> endl;
-		file >> para_list[3] >> endl;
+		para_config_file >> para_list[0];
+		para_config_file >> para_list[1];
+		para_config_file >> para_list[2];
+		para_config_file >> para_list[3];
 	} else {
 		para_list[0] = 0.01;
 		para_list[1] = 0.01;
 		para_list[2] = 5000;
 		para_list[3] = 100;
-		cout << "File open error" << endl;
+		para_config_file.open("para_config", ios::out);
+		para_config_file << para_list[0] << endl;
+		para_config_file << para_list[1] << endl;
+		para_config_file << para_list[2] << endl;
+		para_config_file << para_list[3] << endl;
+
+		cout << "No parameter config file, default parameters are used." << endl;
 	}
 
 	para_config_file.close();
@@ -81,4 +87,8 @@ double* initialize() {
 }
 
 void inference(int* mfs, int* sample) {
+}
+
+void validation() {
+	
 }
