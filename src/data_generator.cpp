@@ -53,8 +53,7 @@ void generate_sample_data(double p, double q, int M, int N, int* mfs_data) {
 	file.close();
 }
 
-int* read_mfs_data() {
-	int* mfs_data;
+int read_mfs_data(int* &mfs_data) {
 	int N;
 
 	fstream file("mfs_data");
@@ -71,14 +70,13 @@ int* read_mfs_data() {
 		cout << "File open error" << endl;
 	}
 
-	return mfs_data;
+	return N;
 }
 
-int* read_sample_data() {
+int read_sample_data(int* &visual_sample_data, int* &standard_data) {
 	int* sample_data;
-	int* standard_data;
-	int* visual_sample_data;
 	int M;
+	int len;
 
 	fstream file("sample_data");
 
@@ -98,9 +96,8 @@ int* read_sample_data() {
 		}
 
 		visual_sample_data = new int [count];
-		visual_sample_data[0] = count;
 
-		int k = 1;
+		int k = 0;
 
 		for (int i=0; i<M; i++) {
 			if (sample_data[i] != -1) {
@@ -108,16 +105,32 @@ int* read_sample_data() {
 				k++;
 			}
 		}
+
+		len = count;
 	} else {
 		cout << "File open error" << endl;
+		len = -1;
 	}
 
-	return visual_sample_data;
+
+	return len;
 }
 
 void generate_data(double p, double q, int M, int N) {
 	srand((unsigned)time(NULL)); 
 	generate_mfs_data(N);
-	int* mfs_data = read_mfs_data();
+	int *mfs_data;
+	read_mfs_data(mfs_data);
 	generate_sample_data(p, q, M, N, mfs_data);
+}
+
+void generate_template_data(int* mfs, int mfs_len, int* template_data, int template_len, int start) {
+	int n = start;
+
+	for (int i=0; i<template_len; i++) {
+		template_data[i] = mfs[n];
+		n++;
+		if (n >= mfs_len)
+			n = 0;
+	}
 }

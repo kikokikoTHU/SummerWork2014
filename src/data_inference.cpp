@@ -35,12 +35,11 @@ int edit_dist(int* mfs, int* sample, int mfs_len, int sample_len, int** detail_l
 
 			if (temp < ptr[i-1][j-1] + d) {
 				detail_list[i][j] = 2;
+				ptr[i][j] = temp;
 			} else {
 				detail_list[i][j] = d;
+				ptr[i][j] = ptr[i-1][j-1] + d;
 			}
-
-            ptr[i][j] = min(temp, ptr[i-1][j-1] + d);
-
         }
     }
 
@@ -86,7 +85,46 @@ double* initialize() {
 	return para_list;
 }
 
-void inference(int* mfs, int* sample) {
+void inference(int* mfs, int* sample, int mfs_len, int sample_len) {
+	int N = sample_len*1.01;
+	int M = sample_len;
+
+	int min_dist = sample_len*2;
+
+	int* template_data = new int[N];
+	int** detail_list = new int*[M+1];
+	for (int i=0; i<M+1; i++) {
+		detail_list[i] = new int[N+1];
+	}
+
+	int tmp;
+
+	int* trace = new int[N]; 
+
+	for (int i=0; i<mfs_len; i++) {
+		generate_template_data(mfs, mfs_len, template_data, N, i);
+		tmp = edit_dist(template_data, sample, N, M, detail_list);
+		if (tmp < min_dist) {
+			min_dist = tmp;
+
+			int trace_i = M;
+			int trace_j = N;
+
+			for (int i=0;i<N; i++) {
+				trace[N-1-i] =detail_list[trace_i][trace_j];
+
+				if (detail_list[trace_i][trace_j] != 2) {
+					trace_i--;
+					trace_j--;
+				} else {
+					trace_j--;
+				}
+			}	
+		}
+	}
+
+	cout << "min dist is " << endl;
+	cout << min_dist << endl;
 }
 
 void validation() {

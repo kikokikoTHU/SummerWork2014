@@ -4,4 +4,6 @@ int edit_dist(int* mfs, int* sample, int mfs_len, int sample_len, int** detail_l
 
 double* initialize();
 
-void inference(int* mfs, int* sample);
+void inference(int* mfs, int* sample, int mfs_len, int sample_len);
+
+void validation(int* );
