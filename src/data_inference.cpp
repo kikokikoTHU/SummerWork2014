@@ -25,16 +25,16 @@ int edit_dist(int* mfs, int* sample, int mfs_len, int sample_len, int** detail_l
 
             int d;
 
-            int temp = ptr[i][j-1]+1;
+            int temp = ptr[i][j-1]+1 < ptr[i-1][j]+1 ? ptr[i][j-1]+1 : ptr[i-1][j]+1;
 
             if(sample[i-1] == mfs[j-1]) {
-                d = 0; 
+                d = OK; 
             } else {
-                d = 1;
+                d = ERR;
             }
 
 			if (temp < ptr[i-1][j-1] + d) {
-				detail_list[i][j] = 2;
+				detail_list[i][j] = MISS;
 				ptr[i][j] = temp;
 			} else {
 				detail_list[i][j] = d;
@@ -85,7 +85,7 @@ double* initialize() {
 	return para_list;
 }
 
-void inference(int* mfs, int* sample, int mfs_len, int sample_len) {
+double* inference(int* mfs, int* sample, int mfs_len, int sample_len) {
 	int N = sample_len*1.01;
 	int M = sample_len;
 
@@ -110,10 +110,10 @@ void inference(int* mfs, int* sample, int mfs_len, int sample_len) {
 			int trace_i = M;
 			int trace_j = N;
 
-			for (int i=0;i<N; i++) {
-				trace[N-1-i] =detail_list[trace_i][trace_j];
+			for (int j=0; j<N; j++) {
+				trace[N-1-j] = detail_list[trace_i][trace_j];
 
-				if (detail_list[trace_i][trace_j] != 2) {
+				if (detail_list[trace_i][trace_j] == OK  || detail_list[trace_i][trace_j] == ERR) {
 					trace_i--;
 					trace_j--;
 				} else {
@@ -123,10 +123,198 @@ void inference(int* mfs, int* sample, int mfs_len, int sample_len) {
 		}
 	}
 
-	cout << "min dist is " << endl;
-	cout << min_dist << endl;
+	double* res = validation(trace, N);
+
+	for(int i = 0; i < M + 1; i++) {
+		delete[] detail_list[i];
+        detail_list[i] = NULL;
+    }
+
+    delete[] detail_list;
+    detail_list = NULL;
+
+	delete[] template_data;
+	template_data = NULL;
+
+	delete[] trace;
+	trace = NULL;
+
+	return res;
 }
 
-void validation() {
-	
+double* validation(int* result, int result_len) {
+	fstream file("truth_data");
+
+	int truth_len;
+	file >> truth_len;
+
+	int *truth = new int[truth_len];
+	for (int i=0; i<truth_len; i++) {
+		file >> truth[i];
+	}
+
+	file.close();
+
+	int alg_err = 0;
+	int res_err = truth_len;
+
+	int err_bit = 0;
+	int miss_bit = 0;
+
+	int err_recall = 0;
+	int miss_recall = 0;
+
+	int err_recall_alg = 0;
+	int miss_recall_alg = 0;
+
+	int start = 0;
+	while (start < truth_len && start != MISS) 
+		start++;
+
+	for (int i=0; i<result_len; i++)
+		if ((start+i) < truth_len)
+			if (result[i] != truth[start+i])
+				alg_err++;
+
+	for (int i=0; i<result_len; i++)
+		if (i < truth_len)
+			if (result[i] == truth[i])
+				res_err--;
+
+	for (int i=0; i<truth_len; i++) {
+		if (i < result_len) {
+			if (truth[i] == ERR) {
+				err_bit++;
+				if (result[i] == ERR) {
+					err_recall++;
+				}
+			} else if (truth[i] == MISS) {
+				miss_bit++;
+				if (result[i] == MISS) {
+					miss_recall++;
+				}
+			} 
+		} else {
+			if (truth[i] == ERR) {
+				err_bit++;
+			} else if (truth[i] == MISS) {
+				miss_bit++;
+			} 
+		}
+	}
+		
+	for (int i=0; i<result_len; i++) {
+		if ((start+i) < truth_len) {
+			if (result[i] == truth[start+i])
+				if (result[i] == ERR) {
+					err_recall_alg++;
+				} else if (result[i] == MISS) {
+					miss_recall_alg;
+				}
+		}
+	}
+
+	double* acc = new double[6];
+	acc[0] = 1.0 - (double)alg_err/(double)result_len;
+	acc[1] = 1.0 - (double)res_err/(double)truth_len;
+	if (err_bit == 0) {
+		acc[2] = 1;
+		acc[4] = 1;
+	} else {
+		acc[2] = (double)err_recall / (double)err_bit;
+		acc[4] = (double)err_recall_alg / (double)err_bit;
+	}
+	if (miss_bit == 0) {
+		acc[3] = 1;
+		acc[5] = 1;
+	} else {
+		acc[3] = (double)miss_recall / (double)miss_bit;
+		acc[5] = (double)miss_recall_alg / (double)miss_bit;
+	}
+
+	delete[] truth;
+
+	return acc;
+}
+
+void experiment_1() {
+	fstream file("experiment_1", ios::out);
+
+	if (file) {
+		double* acc;
+		double* para_list;
+		int* mfs_data;
+		int* sample_data;
+
+		para_list = initialize();
+
+		for (int mfs_l=50; mfs_l<=300; mfs_l+=50) {
+			for (int sam_l=5000; sam_l<=10000; sam_l+=1000) {
+				for (int i=0; i<10; i++) {
+					generate_data(para_list[0], para_list[1], sam_l, mfs_l);
+
+					int mfs_len;
+					int sample_len;
+					mfs_len = read_mfs_data(mfs_data);
+					sample_len = read_sample_data(sample_data);
+
+					acc = inference(mfs_data, sample_data, mfs_len, sample_len);
+					file << sam_l << " " << mfs_l << " " << acc[0] << " " << acc[1] << " " << acc[2] << " " << acc[3] << " " << acc[4] << " " << acc[5] << endl;
+					cout << sam_l << " " << mfs_l << " " << acc[0] << " " << acc[1] << " " << acc[2] << " " << acc[3] << " " << acc[4] << " " << acc[5] << endl;
+
+					delete[] mfs_data;
+					mfs_data = NULL;
+					delete[] sample_data;
+					sample_data = NULL;
+				}
+			}
+		}
+
+		file.close();
+	} else {
+		cout << "File open error!" << endl;
+	}
+}	
+
+void experiment_2() {
+	fstream file("experiment_2", ios::out);
+
+	if (file) {
+		double* acc;
+		double* para_list;
+		int* mfs_data;
+		int* sample_data;
+
+		para_list = initialize();
+
+		for (double miss_rate=0.002; miss_rate<=0.01; miss_rate+=0.002) {
+			for (double err_rate=0.002; err_rate<=0.01; err_rate+=0.002) {
+				for (int i=0; i<10; i++) {
+					generate_data(miss_rate, err_rate, para_list[2], para_list[3]);
+
+					int mfs_len;
+					int sample_len;
+					mfs_len = read_mfs_data(mfs_data);
+					sample_len = read_sample_data(sample_data);
+
+					acc = inference(mfs_data, sample_data, mfs_len, sample_len);
+					file << miss_rate << " " << err_rate << " " 
+						<< acc[0] << " " << acc[1] << " " << acc[2] << " " 
+						<< acc[3] << " " << acc[4] << " " << acc[5] << endl;
+					cout << miss_rate << " " << err_rate << " " 
+						<< acc[0] << " " << acc[1] << " " << acc[2] << " " 
+						<< acc[3] << " " << acc[4] << " " << acc[5] << endl;
+
+					delete[] mfs_data;
+					mfs_data = NULL;
+					delete[] sample_data;
+					sample_data = NULL;
+				}
+			}
+		}
+
+		file.close();
+	} else {
+		cout << "File open error!" << endl;
+	}
 }

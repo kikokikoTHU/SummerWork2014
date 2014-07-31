@@ -21,10 +21,11 @@ void generate_sample_data(double p, double q, int M, int N, int* mfs_data) {
 	}
 
 	fstream file("sample_data", ios::out);
-	fstream file2("error_data", ios::out);
+	fstream file2("truth_data", ios::out);
 
 	if (file && file2) {
 		file << M << endl;
+		file2 << M <<endl;
 
 		int n = rand()%N;
 
@@ -32,14 +33,15 @@ void generate_sample_data(double p, double q, int M, int N, int* mfs_data) {
 			double r = rand()/double(RAND_MAX);
 
 			if (r < p+q && r < q) {
-				file << rand()%0x1000 << '\t' << mfs_data[n] << endl;
-				//file2 << n <<endl;
+				file << rand()%0x1000 << endl;
+				file2 << 1 <<endl;
 			} else if (r < p+q && q <= r) {
 				// receive nothing
-				file << -1 << '\t' << mfs_data[n] << endl;
-				//file2 << n <<endl;
+				file << -1 << endl;
+				file2 << 2 <<endl;
 			} else if (r >= p+q) {
-				file << mfs_data[n] << '\t' << mfs_data[n] << endl;
+				file << mfs_data[n] << endl;
+				file2 << 0 <<endl;
 			}
 
 			n++;
@@ -51,6 +53,7 @@ void generate_sample_data(double p, double q, int M, int N, int* mfs_data) {
 	}
 
 	file.close();
+	file2.close();
 }
 
 int read_mfs_data(int* &mfs_data) {
@@ -73,7 +76,7 @@ int read_mfs_data(int* &mfs_data) {
 	return N;
 }
 
-int read_sample_data(int* &visual_sample_data, int* &standard_data) {
+int read_sample_data(int* &visual_sample_data) {
 	int* sample_data;
 	int M;
 	int len;
@@ -84,12 +87,11 @@ int read_sample_data(int* &visual_sample_data, int* &standard_data) {
 		file >> M;
 
 		sample_data = new int [M];
-		standard_data = new int [M];
 
 		int count = 0;
 
 		for (int i=0; i<M; i++) {
-			file >> sample_data[i] >> standard_data[i];
+			file >> sample_data[i];
 			if (sample_data[i] != -1) {
 				count++;
 			}
